@@ -315,7 +315,7 @@
     function getOmerText(day) {
       const weeks = Math.floor(day / 7);
       const days = day % 7;
-      let text = `היום ${hebrewDayCount(day)} לעומר`;
+      let text = `היום ${hebrewDayCount(day)} בעומר`;
       if (weeks > 0) {
         text += ` שהם ${hebrewWeekCount(weeks)}`;
         if (days > 0) {
@@ -454,7 +454,8 @@
         // Omer starts on 16 Nisan. We need the Hebrew year that contains Nisan of this Gregorian year.
         // Nisan falls in March/April, so for Gregorian year Y, the Hebrew year is Y + 3760
         const hebrewYear = year + 3760;
-        const omerStart = new HDate(16, 'Nisan', hebrewYear);
+        // Events are at 20:00 (after sunset), so the evening of 15 Nisan = start of 16 Nisan = Day 1
+        const omerStart = new HDate(15, 'Nisan', hebrewYear);
         const startGreg = omerStart.greg();
 
         for (let day = 1; day <= 49; day++) {

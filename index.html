@@ -338,6 +338,7 @@
     let pendingHebrewEvents = [];
 
     const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+    const HEBREW_DAY_NUMBERS = ['', 'א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ז׳', 'ח׳', 'ט׳', 'י׳', 'י״א', 'י״ב', 'י״ג', 'י״ד', 'ט״ו', 'ט״ז', 'י״ז', 'י״ח', 'י״ט', 'כ׳', 'כ״א', 'כ״ב', 'כ״ג', 'כ״ד', 'כ״ה', 'כ״ו', 'כ״ז', 'כ״ח', 'כ״ט', 'ל׳'];
 
     // ---- Hebrew months ----
     const HEBREW_MONTHS = [
@@ -417,7 +418,7 @@
       for (let d = 1; d <= 30; d++) {
         const opt = document.createElement('option');
         opt.value = d;
-        opt.textContent = d;
+        opt.textContent = HEBREW_DAY_NUMBERS[d];
         daySelect.appendChild(opt);
       }
 

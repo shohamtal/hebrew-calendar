@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>תזכורות לוח עברי</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+      direction: rtl;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 20px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: #1a237e;
+      margin-bottom: 8px;
+    }
+    header p { color: #666; font-size: 0.95em; }
+
+    /* Setup Section */
+    .setup-card {
+      background: #fff3e0;
+      border: 1px solid #ffcc80;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .setup-card h3 { color: #e65100; margin-bottom: 12px; }
+    .setup-card ol { padding-right: 20px; line-height: 1.8; font-size: 0.9em; }
+    .setup-card a { color: #1565c0; }
+    .setup-card input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-size: 0.95em;
+      direction: ltr;
+      text-align: left;
+    }
+    .setup-card .save-btn {
+      margin-top: 10px;
+      padding: 8px 20px;
+      background: #e65100;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    /* Auth */
+    .auth-section {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .auth-btn {
+      padding: 12px 28px;
+      background: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .auth-btn:hover { background: #3367d6; }
+    .auth-btn:disabled { background: #aaa; cursor: not-allowed; }
+    .auth-status {
+      margin-top: 8px;
+      font-size: 0.85em;
+      color: #388e3c;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 0;
+    }
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      background: #e0e0e0;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95em;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .tab:first-child { border-radius: 0 12px 0 0; }
+    .tab:last-child { border-radius: 12px 0 0 0; }
+    .tab.active {
+      background: white;
+      color: #1a237e;
+      font-weight: 700;
+    }
+
+    /* Card */
+    .card {
+      background: white;
+      border-radius: 0 0 12px 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 1.1em;
+      color: #1a237e;
+      margin-bottom: 16px;
+    }
+
+    /* Form elements */
+    label { display: block; font-size: 0.9em; font-weight: 500; margin-bottom: 6px; color: #444; }
+    .field { margin-bottom: 16px; }
+    input[type="time"], input[type="text"], select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.95em;
+      font-family: inherit;
+    }
+    select { appearance: none; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat left 12px center; padding-left: 30px; }
+    .row { display: flex; gap: 12px; }
+    .row > * { flex: 1; }
+
+    /* Year checkboxes */
+    .years-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .year-cb {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.9em;
+    }
+    .year-cb input { width: 16px; height: 16px; }
+
+    /* Action button */
+    .action-btn {
+      width: 100%;
+      padding: 14px;
+      background: #1a237e;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.05em;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .action-btn:hover { background: #283593; }
+    .action-btn:disabled { background: #9e9e9e; cursor: not-allowed; }
+
+    /* Progress */
+    .progress-container { margin-top: 16px; display: none; }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #1a237e;
+      border-radius: 4px;
+      transition: width 0.3s;
+      width: 0;
+    }
+    .progress-text {
+      text-align: center;
+      font-size: 0.85em;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    /* Log */
+    .log {
+      margin-top: 16px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 0.8em;
+      color: #666;
+      background: #fafafa;
+      border-radius: 8px;
+      padding: 12px;
+      display: none;
+    }
+    .log.visible { display: block; }
+    .log-entry { padding: 2px 0; }
+    .log-entry.success { color: #388e3c; }
+    .log-entry.error { color: #d32f2f; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>תזכורות לוח עברי</h1>
+      <p>הוספת אירועים ליומן גוגל לפי הלוח העברי</p>
+    </header>
+
+    <!-- Setup (shown if no client ID) -->
+    <div id="setup" class="setup-card">
+      <h3>הגדרה ראשונית - Google OAuth Client ID</h3>
+      <ol>
+        <li>היכנס ל-<a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console - Credentials</a></li>
+        <li>לחץ <strong>Create Credentials → OAuth client ID</strong></li>
+        <li>בחר <strong>Web application</strong></li>
+        <li>הוסף ב-<strong>Authorized JavaScript origins</strong>: <code id="originUrl">http://localhost:5173</code></li>
+        <li>לחץ <strong>Create</strong> והעתק את ה-Client ID</li>
+      </ol>
+      <input type="text" id="clientIdInput" placeholder="xxxxx.apps.googleusercontent.com" dir="ltr">
+      <button class="save-btn" onclick="saveClientId()">שמור</button>
+    </div>
+
+    <!-- Auth -->
+    <div id="authSection" class="auth-section hidden">
+      <button class="auth-btn" id="authBtn" onclick="handleAuth()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        התחבר עם גוגל
+      </button>
+      <div id="authStatus" class="auth-status hidden"></div>
+    </div>
+
+    <!-- Main App (shown after auth) -->
+    <div id="mainApp" class="hidden">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('omer')">ספירת העומר</button>
+        <button class="tab" onclick="switchTab('hebrew')">תאריך עברי</button>
+      </div>
+
+      <!-- Omer Tab -->
+      <div id="omerTab" class="card">
+        <h2>הוספת תזכורות ספירת העומר</h2>
+        <div class="field">
+          <label>בחר שנים:</label>
+          <div class="years-grid" id="omerYears"></div>
+        </div>
+        <div class="field">
+          <label>שעת תזכורת:</label>
+          <input type="time" id="omerTime" value="20:00">
+        </div>
+        <button class="action-btn" id="omerBtn" onclick="addOmerEvents()">הוסף ליומן</button>
+        <div class="progress-container" id="omerProgress">
+          <div class="progress-bar"><div class="progress-fill" id="omerProgressFill"></div></div>
+          <div class="progress-text" id="omerProgressText"></div>
+        </div>
+        <div class="log" id="omerLog"></div>
+      </div>
+
+      <!-- Hebrew Date Tab -->
+      <div id="hebrewTab" class="card hidden">
+        <h2>תזכורת לפי תאריך עברי</h2>
+        <div class="row">
+          <div class="field">
+            <label>יום:</label>
+            <select id="hebrewDay"></select>
+          </div>
+          <div class="field">
+            <label>חודש:</label>
+            <select id="hebrewMonth"></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>טקסט התזכורת:</label>
+          <input type="text" id="reminderText" placeholder="למשל: יום הולדת שוהם">
+        </div>
+        <div class="field">
+          <label>שעה:</label>
+          <input type="time" id="hebrewTime" value="09:00">
+        </div>
+        <div class="field">
+          <label>בחר שנים:</label>
+          <div class="years-grid" id="hebrewYears"></div>
+        </div>
+        <button class="action-btn" id="hebrewBtn" onclick="addHebrewDateEvents()">הוסף ליומן</button>
+        <div class="progress-container" id="hebrewProgress">
+          <div class="progress-bar"><div class="progress-fill" id="hebrewProgressFill"></div></div>
+          <div class="progress-text" id="hebrewProgressText"></div>
+        </div>
+        <div class="log" id="hebrewLog"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { HebrewCalendar, HDate, Event } from 'https://esm.sh/@hebcal/core@5';
+
+    // ---- State ----
+    let accessToken = null;
+    let clientId = localStorage.getItem('gcal_client_id') || '';
+
+    // ---- Hebrew months ----
+    const HEBREW_MONTHS = [
+      { name: 'Nisan', he: 'ניסן' },
+      { name: 'Iyyar', he: 'אייר' },
+      { name: 'Sivan', he: 'סיוון' },
+      { name: 'Tamuz', he: 'תמוז' },
+      { name: 'Av', he: 'אב' },
+      { name: 'Elul', he: 'אלול' },
+      { name: 'Tishrei', he: 'תשרי' },
+      { name: 'Cheshvan', he: 'חשוון' },
+      { name: 'Kislev', he: 'כסלו' },
+      { name: 'Tevet', he: 'טבת' },
+      { name: 'Shvat', he: "שבט" },
+      { name: 'Adar', he: 'אדר' },
+      { name: 'Adar II', he: "אדר ב'" },
+    ];
+
+    // Hebrew numbers for Omer counting
+    const ONES_M = ['', 'אחד', 'שני', 'שלושה', 'ארבעה', 'חמישה', 'שישה', 'שבעה', 'שמונה', 'תשעה', 'עשרה'];
+    const TEENS_M = ['', 'אחד עשר', 'שנים עשר', 'שלושה עשר', 'ארבעה עשר', 'חמישה עשר', 'שישה עשר', 'שבעה עשר', 'שמונה עשר', 'תשעה עשר'];
+    const TENS = ['', '', 'עשרים', 'שלושים', 'ארבעים'];
+
+    function hebrewDayCount(n) {
+      if (n === 1) return 'יום אחד';
+      if (n === 2) return 'שני ימים';
+      if (n <= 10) return `${ONES_M[n]} ימים`;
+      if (n <= 19) return `${TEENS_M[n - 10]} יום`;
+      if (n % 10 === 0) return `${TENS[Math.floor(n / 10)]} יום`;
+      const t = TENS[Math.floor(n / 10)];
+      const u = ONES_M[n % 10];
+      return `${u} ו${t} יום`;
+    }
+
+    function hebrewWeekCount(w) {
+      if (w === 1) return 'שבוע אחד';
+      if (w === 2) return 'שני שבועות';
+      return `${ONES_M[w]} שבועות`;
+    }
+
+    function hebrewDayRemainder(d) {
+      if (d === 1) return 'יום אחד';
+      if (d === 2) return 'שני ימים';
+      return `${ONES_M[d]} ימים`;
+    }
+
+    function getOmerText(day) {
+      const weeks = Math.floor(day / 7);
+      const days = day % 7;
+      let text = `היום ${hebrewDayCount(day)} לעומר`;
+      if (weeks > 0) {
+        text += ` שהם ${hebrewWeekCount(weeks)}`;
+        if (days > 0) {
+          text += ` ו${hebrewDayRemainder(days)}`;
+        }
+      }
+      return text;
+    }
+
+    const PRAYER_TEXT = 'הרחמן הוא יחזיר לנו עבודת בית המקדש למקומה במהרה בימינו אמן סלה';
+
+    // ---- Init ----
+    const currentYear = new Date().getFullYear();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Update origin URL display to current page origin
+      document.getElementById('originUrl').textContent = window.location.origin;
+
+      if (clientId) {
+        document.getElementById('setup').classList.add('hidden');
+        document.getElementById('authSection').classList.remove('hidden');
+      }
+
+      // Populate year checkboxes
+      for (const containerId of ['omerYears', 'hebrewYears']) {
+        const container = document.getElementById(containerId);
+        for (let y = currentYear; y < currentYear + 10; y++) {
+          const label = document.createElement('label');
+          label.className = 'year-cb';
+          label.innerHTML = `<input type="checkbox" value="${y}" ${y === currentYear ? 'checked' : ''}> ${y}`;
+          container.appendChild(label);
+        }
+      }
+
+      // Populate Hebrew day dropdown
+      const daySelect = document.getElementById('hebrewDay');
+      for (let d = 1; d <= 30; d++) {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        daySelect.appendChild(opt);
+      }
+
+      // Populate Hebrew month dropdown
+      const monthSelect = document.getElementById('hebrewMonth');
+      HEBREW_MONTHS.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.name;
+        opt.textContent = m.he;
+        monthSelect.appendChild(opt);
+      });
+    });
+
+    // ---- Setup ----
+    window.saveClientId = function() {
+      const val = document.getElementById('clientIdInput').value.trim();
+      if (!val || !val.includes('.apps.googleusercontent.com')) {
+        alert('Client ID לא תקין');
+        return;
+      }
+      localStorage.setItem('gcal_client_id', val);
+      clientId = val;
+      document.getElementById('setup').classList.add('hidden');
+      document.getElementById('authSection').classList.remove('hidden');
+    };
+
+    // ---- Auth (Google Identity Services) ----
+    // Load GSI script dynamically
+    const gsiScript = document.createElement('script');
+    gsiScript.src = 'https://accounts.google.com/gsi/client';
+    gsiScript.onload = () => { window.gsiReady = true; };
+    document.head.appendChild(gsiScript);
+
+    window.handleAuth = function() {
+      if (!window.gsiReady || !clientId) return;
+      const tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: 'https://www.googleapis.com/auth/calendar.events',
+        callback: (response) => {
+          if (response.access_token) {
+            accessToken = response.access_token;
+            document.getElementById('authStatus').textContent = 'מחובר בהצלחה';
+            document.getElementById('authStatus').classList.remove('hidden');
+            document.getElementById('authBtn').disabled = true;
+            document.getElementById('authBtn').textContent = 'מחובר';
+            document.getElementById('mainApp').classList.remove('hidden');
+          }
+        },
+        error_callback: (err) => {
+          console.error('Auth error:', err);
+          alert('שגיאה בהתחברות: ' + (err.message || JSON.stringify(err)));
+        }
+      });
+      tokenClient.requestAccessToken();
+    };
+
+    // ---- Tabs ----
+    window.switchTab = function(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('omerTab').classList.toggle('hidden', tab !== 'omer');
+      document.getElementById('hebrewTab').classList.toggle('hidden', tab !== 'hebrew');
+      document.querySelector(`.tab:${tab === 'omer' ? 'first' : 'last'}-child`).classList.add('active');
+    };
+
+    // ---- Google Calendar API ----
+    async function createCalendarEvent(event) {
+      const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error?.message || `HTTP ${res.status}`);
+      }
+      return res.json();
+    }
+
+    function formatDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function addMinutes(timeStr, mins) {
+      const [h, m] = timeStr.split(':').map(Number);
+      const totalMins = h * 60 + m + mins;
+      return `${String(Math.floor(totalMins / 60) % 24).padStart(2, '0')}:${String(totalMins % 60).padStart(2, '0')}`;
+    }
+
+    // ---- Omer Events ----
+    window.addOmerEvents = async function() {
+      const selectedYears = getSelectedYears('omerYears');
+      if (selectedYears.length === 0) { alert('בחר לפחות שנה אחת'); return; }
+      const time = document.getElementById('omerTime').value;
+
+      const btn = document.getElementById('omerBtn');
+      const progressContainer = document.getElementById('omerProgress');
+      const progressFill = document.getElementById('omerProgressFill');
+      const progressText = document.getElementById('omerProgressText');
+      const log = document.getElementById('omerLog');
+
+      btn.disabled = true;
+      progressContainer.style.display = 'block';
+      log.innerHTML = '';
+      log.classList.add('visible');
+
+      const totalEvents = selectedYears.length * 49;
+      let created = 0;
+
+      for (const year of selectedYears) {
+        // Find the first day of Omer for this Gregorian year
+        // Omer starts on 16 Nisan. We need the Hebrew year that contains Nisan of this Gregorian year.
+        // Nisan falls in March/April, so for Gregorian year Y, the Hebrew year is Y + 3760
+        const hebrewYear = year + 3760;
+        const omerStart = new HDate(16, 'Nisan', hebrewYear);
+        const startGreg = omerStart.greg();
+
+        for (let day = 1; day <= 49; day++) {
+          const eventDate = new Date(startGreg);
+          eventDate.setDate(eventDate.getDate() + (day - 1));
+          const dateStr = formatDate(eventDate);
+          const endTime = addMinutes(time, 15);
+
+          const omerText = getOmerText(day);
+          const description = `${omerText}\n\n${PRAYER_TEXT}`;
+
+          const event = {
+            summary: `ספירת העומר - יום ${day}`,
+            description: description,
+            start: { dateTime: `${dateStr}T${time}:00`, timeZone: 'Asia/Jerusalem' },
+            end: { dateTime: `${dateStr}T${endTime}:00`, timeZone: 'Asia/Jerusalem' },
+            reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 0 }] },
+          };
+
+          try {
+            await createCalendarEvent(event);
+            created++;
+            const pct = Math.round((created / totalEvents) * 100);
+            progressFill.style.width = `${pct}%`;
+            progressText.textContent = `${created} / ${totalEvents} (${pct}%)`;
+            addLog(log, `${dateStr} - יום ${day} ✓`, 'success');
+          } catch (err) {
+            addLog(log, `${dateStr} - יום ${day} ✗ ${err.message}`, 'error');
+          }
+
+          // Small delay to avoid rate limits
+          if (day % 10 === 0) await sleep(500);
+        }
+      }
+
+      btn.disabled = false;
+      progressText.textContent = `הושלם! ${created} אירועים נוצרו`;
+    };
+
+    // ---- Hebrew Date Events ----
+    window.addHebrewDateEvents = async function() {
+      const selectedYears = getSelectedYears('hebrewYears');
+      if (selectedYears.length === 0) { alert('בחר לפחות שנה אחת'); return; }
+
+      const day = parseInt(document.getElementById('hebrewDay').value);
+      const month = document.getElementById('hebrewMonth').value;
+      const text = document.getElementById('reminderText').value.trim();
+      const time = document.getElementById('hebrewTime').value;
+
+      if (!text) { alert('הזן טקסט לתזכורת'); return; }
+
+      const btn = document.getElementById('hebrewBtn');
+      const progressContainer = document.getElementById('hebrewProgress');
+      const progressFill = document.getElementById('hebrewProgressFill');
+      const progressText = document.getElementById('hebrewProgressText');
+      const log = document.getElementById('hebrewLog');
+
+      btn.disabled = true;
+      progressContainer.style.display = 'block';
+      log.innerHTML = '';
+      log.classList.add('visible');
+
+      const totalEvents = selectedYears.length;
+      let created = 0;
+
+      for (const year of selectedYears) {
+        // Determine the Hebrew year. For months Tishrei-Adar, Hebrew year = Gregorian year + 3761
+        // For months Nisan-Elul, Hebrew year = Gregorian year + 3760
+        const nisan_to_elul = ['Nisan', 'Iyyar', 'Sivan', 'Tamuz', 'Av', 'Elul'];
+        const hebrewYear = nisan_to_elul.includes(month) ? year + 3760 : year + 3761;
+
+        try {
+          // Check if this date exists (e.g., 30 Cheshvan doesn't always exist)
+          const hd = new HDate(day, month, hebrewYear);
+          const greg = hd.greg();
+          const dateStr = formatDate(greg);
+          const endTime = addMinutes(time, 15);
+
+          const monthHe = HEBREW_MONTHS.find(m => m.name === month)?.he || month;
+          const description = `${hd.render('he')}`;
+
+          const event = {
+            summary: text,
+            description: description,
+            start: { dateTime: `${dateStr}T${time}:00`, timeZone: 'Asia/Jerusalem' },
+            end: { dateTime: `${dateStr}T${endTime}:00`, timeZone: 'Asia/Jerusalem' },
+            reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 0 }] },
+          };
+
+          await createCalendarEvent(event);
+          created++;
+          const pct = Math.round((created / totalEvents) * 100);
+          progressFill.style.width = `${pct}%`;
+          progressText.textContent = `${created} / ${totalEvents} (${pct}%)`;
+          addLog(log, `${dateStr} (${hd.render('he')}) ✓`, 'success');
+        } catch (err) {
+          addLog(log, `${year} ✗ ${err.message}`, 'error');
+        }
+      }
+
+      btn.disabled = false;
+      progressText.textContent = `הושלם! ${created} אירועים נוצרו`;
+    };
+
+    // ---- Helpers ----
+    function getSelectedYears(containerId) {
+      return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(cb => parseInt(cb.value));
+    }
+
+    function addLog(container, text, cls) {
+      const div = document.createElement('div');
+      div.className = `log-entry ${cls}`;
+      div.textContent = text;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  </script>
+</body>
+</html>

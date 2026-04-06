@@ -441,7 +441,7 @@
       if (!window.gsiReady) return;
       const tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: clientId,
-        scope: 'https://www.googleapis.com/auth/calendar.events',
+        scope: 'https://www.googleapis.com/auth/calendar.events.owned',
         callback: (response) => {
           if (response.access_token) {
             accessToken = response.access_token;

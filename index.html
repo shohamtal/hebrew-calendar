@@ -256,6 +256,7 @@
       <div class="tabs">
         <button class="tab active" onclick="switchTab('omer')">ספירת העומר</button>
         <button class="tab" onclick="switchTab('hebrew')">תאריך עברי</button>
+        <button class="tab" onclick="switchTab('roshChodesh')">ראש חודש</button>
       </div>
 
       <!-- Omer Tab -->
@@ -325,6 +326,33 @@
         </div>
         <div class="log" id="hebrewLog"></div>
       </div>
+
+      <!-- Rosh Chodesh Tab -->
+      <div id="roshChodeshTab" class="card hidden">
+        <h2>תזכורות ראש חודש</h2>
+        <div class="field">
+          <label>בחר שנים:</label>
+          <div class="years-grid" id="roshChodeshYears"></div>
+        </div>
+        <div class="field">
+          <label>שעת תזכורת:</label>
+          <input type="time" id="roshChodeshTime" value="09:00">
+        </div>
+        <button class="action-btn" id="roshChodeshPreviewBtn" onclick="previewRoshChodeshEvents()">תצוגה מקדימה</button>
+        <div class="preview-container" id="roshChodeshPreview">
+          <div class="preview-header" id="roshChodeshPreviewHeader"></div>
+          <table class="preview-table">
+            <thead><tr><th>תאריך</th><th>יום</th><th>כותרת</th><th>תיאור</th></tr></thead>
+            <tbody id="roshChodeshPreviewBody"></tbody>
+          </table>
+          <button class="confirm-btn" id="roshChodeshConfirmBtn" onclick="confirmRoshChodeshEvents()">אישור - הוסף ליומן</button>
+        </div>
+        <div class="progress-container" id="roshChodeshProgress">
+          <div class="progress-bar"><div class="progress-fill" id="roshChodeshProgressFill"></div></div>
+          <div class="progress-text" id="roshChodeshProgressText"></div>
+        </div>
+        <div class="log" id="roshChodeshLog"></div>
+      </div>
     </div>
   </div>
 
@@ -336,6 +364,7 @@
     const clientId = '397711694217-t007f4ecm3h81tv9k0cs35urvvuupt0t.apps.googleusercontent.com';
     let pendingOmerEvents = [];
     let pendingHebrewEvents = [];
+    let pendingRoshChodeshEvents = [];
 
     const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
     const HEBREW_DAY_NUMBERS = ['', 'א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ז׳', 'ח׳', 'ט׳', 'י׳', 'י״א', 'י״ב', 'י״ג', 'י״ד', 'ט״ו', 'ט״ז', 'י״ז', 'י״ח', 'י״ט', 'כ׳', 'כ״א', 'כ״ב', 'כ״ג', 'כ״ד', 'כ״ה', 'כ״ו', 'כ״ז', 'כ״ח', 'כ״ט', 'ל׳'];
@@ -404,7 +433,7 @@
     const currentYear = new Date().getFullYear();
 
     window.addEventListener('DOMContentLoaded', () => {
-      for (const containerId of ['omerYears', 'hebrewYears']) {
+      for (const containerId of ['omerYears', 'hebrewYears', 'roshChodeshYears']) {
         const container = document.getElementById(containerId);
         for (let y = currentYear; y < currentYear + 10; y++) {
           const label = document.createElement('label');
@@ -461,11 +490,13 @@
     };
 
     // ---- Tabs ----
+    const TAB_ORDER = ['omer', 'hebrew', 'roshChodesh'];
     window.switchTab = function(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      const idx = TAB_ORDER.indexOf(tab);
+      document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
       document.getElementById('omerTab').classList.toggle('hidden', tab !== 'omer');
       document.getElementById('hebrewTab').classList.toggle('hidden', tab !== 'hebrew');
-      document.querySelector(`.tab:${tab === 'omer' ? 'first' : 'last'}-child`).classList.add('active');
+      document.getElementById('roshChodeshTab').classList.toggle('hidden', tab !== 'roshChodesh');
     };
 
     // ---- Helpers ----
@@ -702,6 +733,130 @@
       previewBtn.disabled = false;
       progressText.textContent = `הושלם! ${created} אירועים נוצרו`;
       pendingHebrewEvents = [];
+    };
+
+    // ---- Rosh Chodesh ----
+    const HEBREW_MONTH_NAMES_BY_IDX = {
+      1: 'ניסן', 2: 'אייר', 3: 'סיוון', 4: 'תמוז', 5: 'אב', 6: 'אלול',
+      7: 'תשרי', 8: 'חשוון', 9: 'כסלו', 10: 'טבת', 11: 'שבט',
+      12: 'אדר', 13: "אדר ב'",
+    };
+
+    function getMonthNameHe(m, hebrewYear) {
+      if (m === 12 && HDate.isLeapYear(hebrewYear)) return "אדר א'";
+      return HEBREW_MONTH_NAMES_BY_IDX[m];
+    }
+
+    // Returns Rosh Chodesh entries for a given Hebrew year (skipping Tishrei/Rosh Hashanah).
+    // Each entry: { hdate, summary, description }. Two entries when the previous month has 30 days.
+    function getRoshChodeshEntriesForHebrewYear(hebrewYear) {
+      const out = [];
+      const monthsInYear = HDate.monthsInYear(hebrewYear);
+      for (let m = 1; m <= monthsInYear; m++) {
+        if (m === 7) continue; // Tishrei = Rosh Hashanah, not Rosh Chodesh
+        // Nisan's previous month is Adar/Adar II of the SAME Hebrew year (Hebrew year wraps at Tishrei).
+        const prevMonth = m === 1 ? monthsInYear : m - 1;
+        const prevMonthDays = HDate.daysInMonth(prevMonth, hebrewYear);
+        const name = getMonthNameHe(m, hebrewYear);
+        if (prevMonthDays === 30) {
+          const day1 = new HDate(30, prevMonth, hebrewYear);
+          const day2 = new HDate(1, m, hebrewYear);
+          out.push({ hdate: day1, summary: `ראש חודש ${name} (יום א׳)`, description: day1.render('he') });
+          out.push({ hdate: day2, summary: `ראש חודש ${name} (יום ב׳)`, description: day2.render('he') });
+        } else {
+          const only = new HDate(1, m, hebrewYear);
+          out.push({ hdate: only, summary: `ראש חודש ${name}`, description: only.render('he') });
+        }
+      }
+      return out;
+    }
+
+    window.previewRoshChodeshEvents = function() {
+      const selectedYears = getSelectedYears('roshChodeshYears');
+      if (selectedYears.length === 0) { alert('בחר לפחות שנה אחת'); return; }
+      const time = document.getElementById('roshChodeshTime').value;
+      const endTime = addMinutes(time, 15);
+
+      const events = [];
+      for (const year of selectedYears) {
+        // Civil year Y overlaps Hebrew years Y+3760 (tail) and Y+3761 (head).
+        const candidates = [
+          ...getRoshChodeshEntriesForHebrewYear(year + 3760),
+          ...getRoshChodeshEntriesForHebrewYear(year + 3761),
+        ];
+        for (const rc of candidates) {
+          const greg = rc.hdate.greg();
+          if (greg.getFullYear() !== year) continue;
+          const dateStr = formatDate(greg);
+          events.push({
+            summary: rc.summary,
+            description: rc.description,
+            start: { dateTime: `${dateStr}T${time}:00`, timeZone: 'Asia/Jerusalem' },
+            end: { dateTime: `${dateStr}T${endTime}:00`, timeZone: 'Asia/Jerusalem' },
+            reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 0 }] },
+          });
+        }
+      }
+      events.sort((a, b) => a.start.dateTime.localeCompare(b.start.dateTime));
+      pendingRoshChodeshEvents = events;
+
+      const tbody = document.getElementById('roshChodeshPreviewBody');
+      tbody.innerHTML = '';
+      for (const ev of events) {
+        const dateStr = ev.start.dateTime.slice(0, 10);
+        const dayName = DAY_NAMES[new Date(dateStr).getDay()];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${dateStr} <span class="day-name">(${dayName})</span></td><td>${dayName}</td><td>${ev.summary}</td><td>${ev.description}</td>`;
+        tbody.appendChild(tr);
+      }
+
+      const container = document.getElementById('roshChodeshPreview');
+      container.style.display = 'block';
+      document.getElementById('roshChodeshPreviewHeader').textContent = `${events.length} אירועים ייווצרו:`;
+      document.getElementById('roshChodeshConfirmBtn').disabled = false;
+      document.getElementById('roshChodeshProgress').style.display = 'none';
+      document.getElementById('roshChodeshLog').classList.remove('visible');
+    };
+
+    window.confirmRoshChodeshEvents = async function() {
+      if (pendingRoshChodeshEvents.length === 0) return;
+
+      const btn = document.getElementById('roshChodeshConfirmBtn');
+      const previewBtn = document.getElementById('roshChodeshPreviewBtn');
+      const progressContainer = document.getElementById('roshChodeshProgress');
+      const progressFill = document.getElementById('roshChodeshProgressFill');
+      const progressText = document.getElementById('roshChodeshProgressText');
+      const log = document.getElementById('roshChodeshLog');
+
+      btn.disabled = true;
+      previewBtn.disabled = true;
+      progressContainer.style.display = 'block';
+      progressFill.style.width = '0';
+      log.innerHTML = '';
+      log.classList.add('visible');
+
+      const total = pendingRoshChodeshEvents.length;
+      let created = 0;
+
+      for (let i = 0; i < total; i++) {
+        const ev = pendingRoshChodeshEvents[i];
+        const dateStr = ev.start.dateTime.slice(0, 10);
+        try {
+          await createCalendarEvent(ev);
+          created++;
+          const pct = Math.round((created / total) * 100);
+          progressFill.style.width = `${pct}%`;
+          progressText.textContent = `${created} / ${total} (${pct}%)`;
+          addLog(log, `${dateStr} - ${ev.summary} ✓`, 'success');
+        } catch (err) {
+          addLog(log, `${dateStr} - ${ev.summary} ✗ ${err.message}`, 'error');
+        }
+        if ((i + 1) % 10 === 0) await sleep(500);
+      }
+
+      previewBtn.disabled = false;
+      progressText.textContent = `הושלם! ${created} אירועים נוצרו`;
+      pendingRoshChodeshEvents = [];
     };
   </script>
   <footer style="text-align:center;padding:20px 0 10px;font-size:0.8em;color:#999;">

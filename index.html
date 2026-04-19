@@ -54,6 +54,33 @@
       color: #388e3c;
     }
 
+    /* Location toggle */
+    .location-toggle {
+      display: flex;
+      justify-content: center;
+      background: #e0e0e0;
+      border-radius: 20px;
+      padding: 4px;
+      width: fit-content;
+      margin: 0 auto 16px;
+    }
+    .loc-btn {
+      padding: 8px 22px;
+      background: transparent;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9em;
+      color: #666;
+      transition: all 0.2s;
+    }
+    .loc-btn.active {
+      background: #1a237e;
+      color: white;
+      font-weight: 600;
+    }
+
     /* Tabs */
     .tabs {
       display: flex;
@@ -253,10 +280,16 @@
 
     <!-- Main App -->
     <div id="mainApp" class="hidden">
+      <div class="location-toggle">
+        <button class="loc-btn active" onclick="setLocation(true)">ישראל</button>
+        <button class="loc-btn" onclick="setLocation(false)">חוץ לארץ</button>
+      </div>
       <div class="tabs">
         <button class="tab active" onclick="switchTab('omer')">ספירת העומר</button>
         <button class="tab" onclick="switchTab('hebrew')">תאריך עברי</button>
         <button class="tab" onclick="switchTab('roshChodesh')">ראש חודש</button>
+        <button class="tab" onclick="switchTab('beinHazmanim')">בין הזמנים</button>
+        <button class="tab" onclick="switchTab('holidays')">חגים</button>
       </div>
 
       <!-- Omer Tab -->
@@ -353,6 +386,52 @@
         </div>
         <div class="log" id="roshChodeshLog"></div>
       </div>
+
+      <!-- Bein Hazmanim Tab -->
+      <div id="beinHazmanimTab" class="card hidden">
+        <h2>תזכורות בין הזמנים</h2>
+        <div class="field">
+          <label>בחר שנים:</label>
+          <div class="years-grid" id="beinHazmanimYears"></div>
+        </div>
+        <button class="action-btn" id="beinHazmanimPreviewBtn" onclick="previewBeinHazmanimEvents()">תצוגה מקדימה</button>
+        <div class="preview-container" id="beinHazmanimPreview">
+          <div class="preview-header" id="beinHazmanimPreviewHeader"></div>
+          <table class="preview-table">
+            <thead><tr><th>התחלה</th><th>סיום</th><th>כותרת</th><th>תיאור</th></tr></thead>
+            <tbody id="beinHazmanimPreviewBody"></tbody>
+          </table>
+          <button class="confirm-btn" id="beinHazmanimConfirmBtn" onclick="confirmBeinHazmanimEvents()">אישור - הוסף ליומן</button>
+        </div>
+        <div class="progress-container" id="beinHazmanimProgress">
+          <div class="progress-bar"><div class="progress-fill" id="beinHazmanimProgressFill"></div></div>
+          <div class="progress-text" id="beinHazmanimProgressText"></div>
+        </div>
+        <div class="log" id="beinHazmanimLog"></div>
+      </div>
+
+      <!-- Holidays Tab -->
+      <div id="holidaysTab" class="card hidden">
+        <h2>תזכורות חגים</h2>
+        <div class="field">
+          <label>בחר שנים:</label>
+          <div class="years-grid" id="holidayYears"></div>
+        </div>
+        <button class="action-btn" id="holidayPreviewBtn" onclick="previewHolidayEvents()">תצוגה מקדימה</button>
+        <div class="preview-container" id="holidayPreview">
+          <div class="preview-header" id="holidayPreviewHeader"></div>
+          <table class="preview-table">
+            <thead><tr><th>תאריך</th><th>יום</th><th>חג</th><th>תאריך עברי</th></tr></thead>
+            <tbody id="holidayPreviewBody"></tbody>
+          </table>
+          <button class="confirm-btn" id="holidayConfirmBtn" onclick="confirmHolidayEvents()">אישור - הוסף ליומן</button>
+        </div>
+        <div class="progress-container" id="holidayProgress">
+          <div class="progress-bar"><div class="progress-fill" id="holidayProgressFill"></div></div>
+          <div class="progress-text" id="holidayProgressText"></div>
+        </div>
+        <div class="log" id="holidayLog"></div>
+      </div>
     </div>
   </div>
 
@@ -365,6 +444,9 @@
     let pendingOmerEvents = [];
     let pendingHebrewEvents = [];
     let pendingRoshChodeshEvents = [];
+    let pendingBeinHazmanimEvents = [];
+    let pendingHolidayEvents = [];
+    let isIsrael = true;
 
     const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
     const HEBREW_DAY_NUMBERS = ['', 'א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ז׳', 'ח׳', 'ט׳', 'י׳', 'י״א', 'י״ב', 'י״ג', 'י״ד', 'ט״ו', 'ט״ז', 'י״ז', 'י״ח', 'י״ט', 'כ׳', 'כ״א', 'כ״ב', 'כ״ג', 'כ״ד', 'כ״ה', 'כ״ו', 'כ״ז', 'כ״ח', 'כ״ט', 'ל׳'];
@@ -433,7 +515,7 @@
     const currentYear = new Date().getFullYear();
 
     window.addEventListener('DOMContentLoaded', () => {
-      for (const containerId of ['omerYears', 'hebrewYears', 'roshChodeshYears']) {
+      for (const containerId of ['omerYears', 'hebrewYears', 'roshChodeshYears', 'beinHazmanimYears', 'holidayYears']) {
         const container = document.getElementById(containerId);
         for (let y = currentYear; y < currentYear + 10; y++) {
           const label = document.createElement('label');
@@ -490,13 +572,29 @@
     };
 
     // ---- Tabs ----
-    const TAB_ORDER = ['omer', 'hebrew', 'roshChodesh'];
+    const TAB_ORDER = ['omer', 'hebrew', 'roshChodesh', 'beinHazmanim', 'holidays'];
     window.switchTab = function(tab) {
       const idx = TAB_ORDER.indexOf(tab);
       document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
       document.getElementById('omerTab').classList.toggle('hidden', tab !== 'omer');
       document.getElementById('hebrewTab').classList.toggle('hidden', tab !== 'hebrew');
       document.getElementById('roshChodeshTab').classList.toggle('hidden', tab !== 'roshChodesh');
+      document.getElementById('beinHazmanimTab').classList.toggle('hidden', tab !== 'beinHazmanim');
+      document.getElementById('holidaysTab').classList.toggle('hidden', tab !== 'holidays');
+    };
+
+    // ---- Location (Israel vs Chutz La'Aretz) ----
+    // Controls hebcal's `il` flag for the Holidays tab. Other tabs are unaffected.
+    window.setLocation = function(israel) {
+      isIsrael = israel;
+      const btns = document.querySelectorAll('.loc-btn');
+      btns[0].classList.toggle('active', israel);
+      btns[1].classList.toggle('active', !israel);
+      // Invalidate any pending holiday preview since the emitted event set changes with il.
+      if (pendingHolidayEvents.length) {
+        pendingHolidayEvents = [];
+        document.getElementById('holidayPreview').style.display = 'none';
+      }
     };
 
     // ---- Helpers ----
@@ -857,6 +955,215 @@
       previewBtn.disabled = false;
       progressText.textContent = `הושלם! ${created} אירועים נוצרו`;
       pendingRoshChodeshEvents = [];
+    };
+
+    // ---- Bein Hazmanim ----
+    // Three yearly periods (all-day multi-day events):
+    //   Nisan: 10 Nisan → end of Nisan (Hebrew year = civil + 3760)
+    //   Av:    10 Av    → end of Av    (Hebrew year = civil + 3760)
+    //   Tishrei: 23 Tishrei → end of Tishrei (Hebrew year = civil + 3761, since Tishrei starts the new Hebrew year)
+    function getBeinHazmanimPeriodsForYear(civilYear) {
+      const yNisanAv = civilYear + 3760;
+      const yTishrei = civilYear + 3761;
+      const periods = [
+        { name: 'ניסן',  startHD: new HDate(10, 'Nisan',   yNisanAv), endExclHD: new HDate(1, 'Iyyar',    yNisanAv) },
+        { name: 'אב',    startHD: new HDate(10, 'Av',      yNisanAv), endExclHD: new HDate(1, 'Elul',     yNisanAv) },
+        { name: 'תשרי',  startHD: new HDate(23, 'Tishrei', yTishrei), endExclHD: new HDate(1, 'Cheshvan', yTishrei) },
+      ];
+      return periods.map(p => {
+        const lastInclHD = p.endExclHD.prev();
+        return {
+          summary: `בין הזמנים ${p.name}`,
+          startDate: formatDate(p.startHD.greg()),
+          endDateExclusive: formatDate(p.endExclHD.greg()),
+          lastInclusiveDate: formatDate(lastInclHD.greg()),
+          description: `${p.startHD.render('he')} - ${lastInclHD.render('he')}`,
+        };
+      });
+    }
+
+    window.previewBeinHazmanimEvents = function() {
+      const selectedYears = getSelectedYears('beinHazmanimYears');
+      if (selectedYears.length === 0) { alert('בחר לפחות שנה אחת'); return; }
+
+      pendingBeinHazmanimEvents = [];
+      const tbody = document.getElementById('beinHazmanimPreviewBody');
+      tbody.innerHTML = '';
+
+      for (const year of selectedYears) {
+        for (const p of getBeinHazmanimPeriodsForYear(year)) {
+          pendingBeinHazmanimEvents.push({
+            summary: p.summary,
+            description: p.description,
+            start: { date: p.startDate },
+            end: { date: p.endDateExclusive },
+          });
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${p.startDate}</td><td>${p.lastInclusiveDate}</td><td>${p.summary}</td><td>${p.description}</td>`;
+          tbody.appendChild(tr);
+        }
+      }
+
+      document.getElementById('beinHazmanimPreview').style.display = 'block';
+      document.getElementById('beinHazmanimPreviewHeader').textContent = `${pendingBeinHazmanimEvents.length} אירועים ייווצרו:`;
+      document.getElementById('beinHazmanimConfirmBtn').disabled = false;
+      document.getElementById('beinHazmanimProgress').style.display = 'none';
+      document.getElementById('beinHazmanimLog').classList.remove('visible');
+    };
+
+    window.confirmBeinHazmanimEvents = async function() {
+      if (pendingBeinHazmanimEvents.length === 0) return;
+
+      const btn = document.getElementById('beinHazmanimConfirmBtn');
+      const previewBtn = document.getElementById('beinHazmanimPreviewBtn');
+      const progressContainer = document.getElementById('beinHazmanimProgress');
+      const progressFill = document.getElementById('beinHazmanimProgressFill');
+      const progressText = document.getElementById('beinHazmanimProgressText');
+      const log = document.getElementById('beinHazmanimLog');
+
+      btn.disabled = true;
+      previewBtn.disabled = true;
+      progressContainer.style.display = 'block';
+      progressFill.style.width = '0';
+      log.innerHTML = '';
+      log.classList.add('visible');
+
+      const total = pendingBeinHazmanimEvents.length;
+      let created = 0;
+
+      for (const ev of pendingBeinHazmanimEvents) {
+        try {
+          await createCalendarEvent(ev);
+          created++;
+          const pct = Math.round((created / total) * 100);
+          progressFill.style.width = `${pct}%`;
+          progressText.textContent = `${created} / ${total} (${pct}%)`;
+          addLog(log, `${ev.start.date} - ${ev.summary} ✓`, 'success');
+        } catch (err) {
+          addLog(log, `${ev.start.date} - ${ev.summary} ✗ ${err.message}`, 'error');
+        }
+      }
+
+      previewBtn.disabled = false;
+      progressText.textContent = `הושלם! ${created} אירועים נוצרו`;
+      pendingBeinHazmanimEvents = [];
+    };
+
+    // ---- Holidays ----
+    // Explicit allowlist of hebcal English event descriptions. Ordered roughly by frequency per year.
+    // Pesach/Sukkot use only day I (last day and chol hamoed intentionally omitted);
+    // Chanukah uses only the first night. Rosh Hashana includes both days.
+    // Allowlist covers both il:true and il:false emissions. Hebcal emits either the "(CH''M)" variant
+    // (il:true) or the plain name as yom tov (il:false) depending on the il flag, and adds Pesach VIII /
+    // Shavuot I+II / Simchat Torah in Chutz La'Aretz mode.
+    const HOLIDAY_ALLOWLIST = new Set([
+      'Pesach I', 'Pesach II', "Pesach II (CH''M)",
+      "Pesach III (CH''M)", "Pesach IV (CH''M)", "Pesach V (CH''M)", "Pesach VI (CH''M)",
+      'Pesach VII', 'Pesach VIII',
+      'Lag BaOmer',
+      'Yom HaShoah', 'Yom HaZikaron', "Yom HaAtzma'ut",
+      'Shavuot', 'Shavuot I', 'Shavuot II',
+      'Rosh Hashana I', 'Rosh Hashana II',
+      'Yom Kippur',
+      'Sukkot I', 'Sukkot II', "Sukkot II (CH''M)",
+      "Sukkot III (CH''M)", "Sukkot IV (CH''M)", "Sukkot V (CH''M)", "Sukkot VI (CH''M)",
+      'Chanukah: 1 Candle', 'Chanukah: 2 Candles', 'Chanukah: 3 Candles', 'Chanukah: 4 Candles',
+      'Chanukah: 5 Candles', 'Chanukah: 6 Candles', 'Chanukah: 7 Candles', 'Chanukah: 8 Candles',
+      'Purim', 'Shushan Purim',
+    ]);
+
+    function getHolidayEventsForYear(civilYear) {
+      const events = HebrewCalendar.calendar({
+        year: civilYear,
+        isHebrewYear: false,
+        il: isIsrael,
+        noRoshChodesh: true,
+        noSpecialShabbat: true,
+        sedrot: false,
+        omer: false,
+        candlelighting: false,
+      });
+      return events.filter(ev => HOLIDAY_ALLOWLIST.has(ev.getDesc()));
+    }
+
+    window.previewHolidayEvents = function() {
+      const selectedYears = getSelectedYears('holidayYears');
+      if (selectedYears.length === 0) { alert('בחר לפחות שנה אחת'); return; }
+
+      pendingHolidayEvents = [];
+      const tbody = document.getElementById('holidayPreviewBody');
+      tbody.innerHTML = '';
+
+      for (const year of selectedYears) {
+        for (const ev of getHolidayEventsForYear(year)) {
+          const hd = ev.getDate();
+          const greg = hd.greg();
+          const startDate = formatDate(greg);
+          const nextGreg = new Date(greg);
+          nextGreg.setDate(nextGreg.getDate() + 1);
+          const endDate = formatDate(nextGreg);
+          const summary = ev.render('he');
+          const description = hd.render('he');
+          const dayName = DAY_NAMES[greg.getDay()];
+
+          pendingHolidayEvents.push({
+            summary,
+            description,
+            start: { date: startDate },
+            end: { date: endDate },
+          });
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${startDate}</td><td>${dayName}</td><td>${summary}</td><td>${description}</td>`;
+          tbody.appendChild(tr);
+        }
+      }
+
+      document.getElementById('holidayPreview').style.display = 'block';
+      document.getElementById('holidayPreviewHeader').textContent = `${pendingHolidayEvents.length} אירועים ייווצרו:`;
+      document.getElementById('holidayConfirmBtn').disabled = false;
+      document.getElementById('holidayProgress').style.display = 'none';
+      document.getElementById('holidayLog').classList.remove('visible');
+    };
+
+    window.confirmHolidayEvents = async function() {
+      if (pendingHolidayEvents.length === 0) return;
+
+      const btn = document.getElementById('holidayConfirmBtn');
+      const previewBtn = document.getElementById('holidayPreviewBtn');
+      const progressContainer = document.getElementById('holidayProgress');
+      const progressFill = document.getElementById('holidayProgressFill');
+      const progressText = document.getElementById('holidayProgressText');
+      const log = document.getElementById('holidayLog');
+
+      btn.disabled = true;
+      previewBtn.disabled = true;
+      progressContainer.style.display = 'block';
+      progressFill.style.width = '0';
+      log.innerHTML = '';
+      log.classList.add('visible');
+
+      const total = pendingHolidayEvents.length;
+      let created = 0;
+
+      for (let i = 0; i < total; i++) {
+        const ev = pendingHolidayEvents[i];
+        try {
+          await createCalendarEvent(ev);
+          created++;
+          const pct = Math.round((created / total) * 100);
+          progressFill.style.width = `${pct}%`;
+          progressText.textContent = `${created} / ${total} (${pct}%)`;
+          addLog(log, `${ev.start.date} - ${ev.summary} ✓`, 'success');
+        } catch (err) {
+          addLog(log, `${ev.start.date} - ${ev.summary} ✗ ${err.message}`, 'error');
+        }
+        if ((i + 1) % 10 === 0) await sleep(500);
+      }
+
+      previewBtn.disabled = false;
+      progressText.textContent = `הושלם! ${created} אירועים נוצרו`;
+      pendingHolidayEvents = [];
     };
   </script>
   <footer style="text-align:center;padding:20px 0 10px;font-size:0.8em;color:#999;">

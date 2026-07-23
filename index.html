@@ -3,6 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Warm up connections to the runtime CDNs (scripts load deferred; this cuts DNS/TLS latency) -->
+  <link rel="preconnect" href="https://esm.sh" crossorigin>
+  <link rel="preconnect" href="https://accounts.google.com">
+  <link rel="dns-prefetch" href="https://www.googleapis.com">
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+
   <title>הוספת חגים, ספירת העומר ותאריכים עבריים ליומן גוגל | תזכורות לוח עברי</title>
   <meta name="description" content="כלי חינמי להוספת תזכורות לפי הלוח העברי ליומן גוגל: ספירת העומר, חגי ישראל, ראשי חודשים, בין הזמנים, ימי הולדת עבריים וכל תאריך עברי — בתצוגה מקדימה ובלחיצת כפתור.">
   <meta name="keywords" content="הוספת חגים ליומן גוגל, תזכורות לתאריכים עבריים ליומן גוגל, הוספת תזכורות ספירת העומר, הוספת ימי הולדת עבריים יומן גוגל, לוח עברי, יומן גוגל, תאריך עברי, ראש חודש, בין הזמנים">
@@ -17,9 +27,14 @@
   <meta property="og:title" content="הוספת חגים, ספירת העומר ותאריכים עבריים ליומן גוגל">
   <meta property="og:description" content="כלי חינמי להוספת תזכורות לפי הלוח העברי ליומן גוגל: ספירת העומר, חגי ישראל, ראשי חודשים, בין הזמנים, ימי הולדת עבריים וכל תאריך עברי.">
   <meta property="og:site_name" content="תזכורות לוח עברי">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://shohamtal.github.io/hebrew-calendar/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="הוספת חגים, ספירת העומר ותאריכים עבריים ליומן גוגל">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="הוספת חגים, ספירת העומר ותאריכים עבריים ליומן גוגל">
   <meta name="twitter:description" content="כלי חינמי להוספת תזכורות לפי הלוח העברי ליומן גוגל — ספירת העומר, חגים, ראש חודש, ימי הולדת עבריים וכל תאריך עברי.">
+  <meta name="twitter:image" content="https://shohamtal.github.io/hebrew-calendar/images/og-image.png">
 
   <!-- Structured data: WebApplication -->
   <script type="application/ld+json">
@@ -82,6 +97,24 @@
           "text": "משתמשים בלשונית \"תאריך עברי\": בוחרים את היום והחודש העברי של יום ההולדת, כותבים למשל \"יום הולדת עברי\", ומסמנים לכמה שנים קדימה ליצור את התזכורת. האפליקציה תיצור תזכורת ביומן גוגל בתאריך העברי הנכון בכל שנה, גם כשהתאריך הלועזי משתנה."
         }
       }
+    ]
+  }
+  </script>
+
+  <!-- Structured data: HowTo -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "איך מוסיפים תזכורות לפי הלוח העברי ליומן גוגל",
+    "description": "מדריך בן ארבעה שלבים להוספת חגים, ספירת העומר, ימי הולדת עבריים וכל תאריך עברי ליומן Google.",
+    "totalTime": "PT2M",
+    "tool": [{ "@type": "HowToTool", "name": "חשבון Google" }],
+    "step": [
+      { "@type": "HowToStep", "position": 1, "name": "התחברות", "text": "מתחברים עם חשבון Google (הרשאה ליצירת אירועים ביומן שלכם בלבד)." },
+      { "@type": "HowToStep", "position": 2, "name": "בחירת סוג התזכורת", "text": "בוחרים לשונית: חגים, תאריך עברי, ראש חודש, ספירת העומר או בין הזמנים." },
+      { "@type": "HowToStep", "position": 3, "name": "הגדרת שנים ושעה", "text": "מסמנים את השנים הרצויות ומגדירים שעה או טקסט לתזכורת." },
+      { "@type": "HowToStep", "position": 4, "name": "תצוגה מקדימה ואישור", "text": "לוחצים תצוגה מקדימה, בודקים את הרשימה ומאשרים הוספה ליומן גוגל." }
     ]
   }
   </script>
@@ -400,6 +433,17 @@
       margin: 0 0 6px;
     }
 
+    /* Embedded screenshots */
+    .shot { margin: 0 0 22px; }
+    .shot img {
+      width: 100%; height: auto; display: block;
+      border: 1px solid #e6e6ef; border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .shot figcaption {
+      margin-top: 8px; font-size: 0.82em; color: #888; text-align: center;
+    }
+
     /* Features list */
     .features { display: grid; gap: 14px; }
     .feature {
@@ -649,6 +693,11 @@
     <!-- What the app does (always visible) -->
     <section class="content-section">
       <h2>מה האפליקציה עושה?</h2>
+      <figure class="shot">
+        <img src="images/app-interface.png" width="1000" height="425" loading="lazy"
+             alt="ממשק האפליקציה להוספת חגים ותאריכים עבריים ליומן גוגל — בחירת לוח ישראל או חוץ לארץ, לשוניות ובחירת שנים">
+        <figcaption>בוחרים סוג תזכורת, שנים ולוח (ישראל / חוץ לארץ) — הכול במסך אחד</figcaption>
+      </figure>
       <div class="features">
         <div class="feature">
           <h3>הוספת תזכורות ספירת העומר ליומן גוגל</h3>
@@ -682,10 +731,15 @@
       <h2>איך זה עובד?</h2>
       <ol class="steps">
         <li>מתחברים עם חשבון Google (הרשאה ליצירת אירועים ביומן שלכם בלבד).</li>
-        <li>בוחרים לשונית: ספירת העומר, תאריך עברי, ראש חודש, בין הזמנים או חגים.</li>
+        <li>בוחרים לשונית: חגים, תאריך עברי, ראש חודש, ספירת העומר או בין הזמנים.</li>
         <li>מסמנים את השנים ומגדירים שעה או טקסט לתזכורת.</li>
         <li>לוחצים "תצוגה מקדימה", בודקים את הרשימה — ומאשרים "הוסף ליומן".</li>
       </ol>
+      <figure class="shot">
+        <img src="images/omer-preview.png" width="1000" height="589" loading="lazy"
+             alt="תצוגה מקדימה של תזכורות ספירת העומר לפני הוספה ליומן גוגל — 49 אירועים יומיים עם נוסח הספירה בעברית">
+        <figcaption>תצוגה מקדימה: כל האירועים שייווצרו ביומן — כאן ספירת העומר</figcaption>
+      </figure>
     </section>
 
     <!-- FAQ (always visible, matches search intent) -->

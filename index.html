@@ -764,7 +764,7 @@
   </div>
 
   <script type="module">
-    import { HebrewCalendar, HDate, Event } from 'https://esm.sh/@hebcal/core@5';
+    import { HebrewCalendar, HDate, Event, gematriya } from 'https://esm.sh/@hebcal/core@5';
 
     // ---- State ----
     let accessToken = null;
@@ -1097,7 +1097,7 @@
           const greg = hd.greg();
           const dateStr = formatDate(greg);
           const endTime = addMinutes(time, 15);
-          const hebrewDateStr = hd.render('he');
+          const hebrewDateStr = renderHebrewDateHe(hd);
           const dayName = DAY_NAMES[greg.getDay()];
 
           pendingHebrewEvents.push({
@@ -1179,6 +1179,16 @@
       return HEBREW_MONTH_NAMES_BY_IDX[m];
     }
 
+    // Renders a Hebrew date in gematriya, e.g. "י״ד אדר ה׳תשפ״ו".
+    // hebcal's gematriya() drops the thousands, so we prepend gematriya(thousands) ("ה׳").
+    function renderHebrewDateHe(hd) {
+      const day = gematriya(hd.getDate());
+      const month = getMonthNameHe(hd.getMonth(), hd.getFullYear());
+      const y = hd.getFullYear();
+      const year = gematriya(Math.floor(y / 1000)) + gematriya(y % 1000);
+      return `${day} ${month} ${year}`;
+    }
+
     // Returns Rosh Chodesh entries for a given Hebrew year (skipping Tishrei/Rosh Hashanah).
     // Each entry: { hdate, summary, description }. Two entries when the previous month has 30 days.
     function getRoshChodeshEntriesForHebrewYear(hebrewYear) {
@@ -1193,11 +1203,11 @@
         if (prevMonthDays === 30) {
           const day1 = new HDate(30, prevMonth, hebrewYear);
           const day2 = new HDate(1, m, hebrewYear);
-          out.push({ hdate: day1, summary: `ראש חודש ${name} (יום א׳)`, description: day1.render('he') });
-          out.push({ hdate: day2, summary: `ראש חודש ${name} (יום ב׳)`, description: day2.render('he') });
+          out.push({ hdate: day1, summary: `ראש חודש ${name} (יום א׳)`, description: renderHebrewDateHe(day1) });
+          out.push({ hdate: day2, summary: `ראש חודש ${name} (יום ב׳)`, description: renderHebrewDateHe(day2) });
         } else {
           const only = new HDate(1, m, hebrewYear);
-          out.push({ hdate: only, summary: `ראש חודש ${name}`, description: only.render('he') });
+          out.push({ hdate: only, summary: `ראש חודש ${name}`, description: renderHebrewDateHe(only) });
         }
       }
       return out;
@@ -1311,7 +1321,7 @@
           startDate: formatDate(p.startHD.greg()),
           endDateExclusive: formatDate(p.endExclHD.greg()),
           lastInclusiveDate: formatDate(lastInclHD.greg()),
-          description: `${p.startHD.render('he')} - ${lastInclHD.render('he')}`,
+          description: `${renderHebrewDateHe(p.startHD)} - ${renderHebrewDateHe(lastInclHD)}`,
         };
       });
     }
@@ -1437,7 +1447,7 @@
           nextGreg.setDate(nextGreg.getDate() + 1);
           const endDate = formatDate(nextGreg);
           const summary = ev.render('he');
-          const description = hd.render('he');
+          const description = renderHebrewDateHe(hd);
           const dayName = DAY_NAMES[greg.getDay()];
 
           pendingHolidayEvents.push({
